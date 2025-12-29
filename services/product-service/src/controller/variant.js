@@ -178,7 +178,8 @@ exports.getVariantsByModel = async (req, res) => {
 
     /* 2️⃣  Hit MongoDB */
     const variants = await Variant.find({ model: modelId })
-      .populate("model", "model_name model_code")
+      .populate("model", )
+      .populate("Year", )
       // .populate("year_range", "year_name year_code") // adjust field → schema
       .sort({ variant_name: 1 })
       .lean(); // lean ⇒ smaller doc
