@@ -412,7 +412,6 @@ exports.createOrder = async (req, res) => {
       //call product service to get product name
       const productResponse = await axios.get(`http://product-service:5001/products/v1/sku/${s.sku}`);
       const productData = productResponse.data.data;
-
       // if customer address is from delhi means it contains delhi in address then make scgst and cgst 0  and make igst= scgst+cgst
       const scgst = (s.gst_percentage || 0) / 2;
       const cgst = (s.gst_percentage || 0) / 2;
@@ -443,7 +442,7 @@ exports.createOrder = async (req, res) => {
           sku: s.sku,
           hsn: productData?.hsn_code || "N/A",
           mpn: productData?.manufacturer_part_name || "N/A",
-          unitPrice: s.selling_price,
+          unitPrice: productData?.selling_price,
           quantity: s.quantity,
           taxRate: `${s.gst_percentage || 0}%`,
           cgstPercent: (s.gst_percentage || 0) / 2,
