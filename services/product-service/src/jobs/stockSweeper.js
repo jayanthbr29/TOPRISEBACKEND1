@@ -191,7 +191,7 @@ async function sweep() {
   }
 
   // bulk-insert logs (if any)
-  if (logs.length) await ProductLog.insertMany(logs);
+  // if (logs.length) await ProductLog.insertMany(logs);
 
   logger.info(
     `✅ sweep done – checked:${checked}  updated:${updated}  ${Date.now() - started
