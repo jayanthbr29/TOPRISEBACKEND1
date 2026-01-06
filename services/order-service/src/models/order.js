@@ -5,6 +5,7 @@ const OrderSchema = new mongoose.Schema(
     orderId: String,
     orderDate: Date,
     deliveryCharges: Number,
+    ordered_pincode: String,
     GST: Number,
     CGST: Number,
     SGST: Number,

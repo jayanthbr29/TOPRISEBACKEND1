@@ -49,8 +49,11 @@ dealerAssignmentQueue.process(async (job) => {
 
       try {
         // 1) Fetch dealers list using the configured productApi instance
+        // const resp = await productApi.get(
+        //   `/products/v1/products/${productId}/availableDealers`
+        // );
         const resp = await productApi.get(
-          `/products/v1/products/${productId}/availableDealers`
+          `/products/v1/products/${productId}/availableDealers/pincode/${order.ordered_pincode}`
         );
         const dealers = resp.data.data || resp.data; // depending on your API shape
 
