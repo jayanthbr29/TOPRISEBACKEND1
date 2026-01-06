@@ -95,7 +95,9 @@ const fulfillmentRoutes = require("./routes/fulfillment");
 const documentUploadRoutes = require("./routes/documentUpload");
 const slaTypesRoutes = require("./routes/slaTypes");
 const slaVoilationModelRoutes = require("./routes/slaVoilationModelRoutes");
+const cartv1Routes = require("./routes/cartv1");
 
+app.use("/api/carts/v1", cartv1Routes);
 
 app.use("/api/carts", cartRoutes);
 app.use("/api/orders", orderRoutes);

@@ -402,6 +402,7 @@ exports.createOrder = async (req, res) => {
         dealerMapped: [],
       })),
       dealerMapping: [],
+      ordered_pincode: req.body.ordered_pincode || req.body.customerDetails?.pincode || "",
     };
 
     const newOrder = await Order.create(orderPayload);
@@ -529,7 +530,7 @@ exports.createOrder = async (req, res) => {
           `❌ Cart not found for user: ${req.body.customerDetails.userId}`
         );
       } else {
-        cart.items = [];
+        cart.items = cart.items.filter(item => item.is_available == false);
         cart.totalPrice = 0;
         cart.itemTotal = 0;
         cart.handlingCharge = 0;

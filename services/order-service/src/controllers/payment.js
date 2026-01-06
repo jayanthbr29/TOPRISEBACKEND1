@@ -163,19 +163,27 @@ exports.verifyPayment = async (req, res) => {
       userId: req.body.payload.payment.entity.notes.user_id,
     });
     console.log("cart", cart);
-    const SKU = cart.items.map((item) => ({
-      sku: item.sku,
-      quantity: item.quantity,
-      productId: item.productId,
-      productName: item.product_name,
-      selling_price: item.selling_price,
-      mrp: item.mrp,
-      mrp_gst_amount: item.mrp_gst_amount,
-      gst_percentage: item.gst_percentage,
-      gst_amount: item.gst_amount,
-      product_total: item.product_total,
-      totalPrice: item.totalPrice,
-    }));
+    let SKU = cart.items.map((item) => {
+      if (item.is_available == true) {
+        return {
+          sku: item.sku,
+          quantity: item.quantity,
+          productId: item.productId,
+          productName: item.product_name,
+          selling_price: item.selling_price,
+          mrp: item.mrp,
+          mrp_gst_amount: item.mrp_gst_amount,
+          gst_percentage: item.gst_percentage,
+          gst_amount: item.gst_amount,
+          product_total: item.product_total,
+          totalPrice: item.totalPrice,
+        }
+      } else {
+        return null;
+      }
+    });
+    
+    SKU = SKU.filter(item => item !== null);
     console.log("SKU", SKU);
     const orderId = `ORD-${Date.now()}-${uuidv4().slice(0, 8)}`;
     const orderPayload = {
@@ -211,6 +219,7 @@ exports.verifyPayment = async (req, res) => {
       payment_id: payment._id, // link payment to order
       GST: cart.gst_amount,
       deliveryCharges: cart.deliveryCharge,
+      ordered_pincode: cart.pincode||req.body.payload.payment.entity.notes.customerDetails.pincode,
     };
     const newOrder = await Order.create(orderPayload);
 
@@ -297,7 +306,7 @@ exports.verifyPayment = async (req, res) => {
         `❌ Cart not found for user: ${req.body.payload.payment.entity.notes.user_id}`
       );
     } else {
-      cart.items = [];
+      cart.items = cart.items.filter(item => item.is_available == false);
       cart.totalPrice = 0;
       cart.itemTotal = 0;
       cart.handlingCharge = 0;

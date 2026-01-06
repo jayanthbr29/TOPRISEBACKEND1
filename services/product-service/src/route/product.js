@@ -153,6 +153,11 @@ router.get(
   "/products/:id/availableDealers",
   productController.getAssignedDealers
 );
+
+router.get(
+  "/products/:id/availableDealers/pincode/:pincode",
+  productController.getAssignedDealersByPincode
+);
 // router.get(
 //   "/get-Dashboard",
 //   authenticate,
