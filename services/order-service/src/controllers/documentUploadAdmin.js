@@ -670,6 +670,7 @@ exports.createOrderforPurchaseRequest = async (req, res) => {
                 quantity: s.quantity,
                 productId: s.productId,
                 productName: s.productName,
+                product_image: s.product_image,
                 selling_price: s.selling_price,
                 mrp: s.mrp,
                 mrp_gst_amount: s.mrp_gst_amount,
