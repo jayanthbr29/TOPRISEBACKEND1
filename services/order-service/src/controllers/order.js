@@ -632,6 +632,10 @@ exports.createOrder = async (req, res) => {
 exports.assignOrderItemsToDealers = async (req, res) => {
   try {
     const { orderId, assignments } = req.body;
+    const productApi = axios.create({
+      baseURL: process.env.PRODUCT_SERVICE_URL || "http://product-service:5001",
+      timeout: 5000,
+    });
 
     const order = await Order.findById(orderId);
     if (!order) return sendError(res, "Order not found", 404);
@@ -645,17 +649,24 @@ exports.assignOrderItemsToDealers = async (req, res) => {
     order.dealerMapping = assignmentsWithDates;
     order.status = "Assigned";
     order.timestamps.assignedAt = new Date();
-    order.skus = order.skus.map((sku) => {
+    order.skus =await Promise.all( order.skus.map(async(sku) => {
       const skuData = assignments.find((a) => a.sku === sku.sku);
+        // 4) Decrement stock
+        await productApi.patch(
+          `/products/v1/products/${skuData.productId}/availableDealers/${skuData.dealerId}`,
+          { decrementBy: skuData.quantity }
+        );
       return {
         ...sku,
         dealerMapped: [{
           dealerId: skuData.dealerId
         }]
       }
-    })
+    }));
 
     await order.save();
+
+
 
     // Log dealer assignment audit
     await logOrderAction({
@@ -3231,14 +3242,38 @@ exports.updateCartWithDelivery = async (req, res) => {
     if (!cart) {
       return res.status(404).json({ error: "Cart not found" });
     }
-
+    let settingDeliveryCharge = 0;
+    let settingMinOrderAmount = 0;
+    const authHeader = req.headers.authorization;
+    try {
+          const res = await axios.get(
+            `http://user-service:5001/api/appSetting`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: authHeader || "",
+              },
+            }
+          );
+          console.log("App Setting Response:", res.data);
+    
+          if (res.data?.success && res.data?.data) {
+              settingDeliveryCharge = res.data.data.deliveryCharge || 0;
+              settingMinOrderAmount = res.data.data.minimumOrderValue || 0;
+          }
+    
+        } catch (err) {
+          console.log(err);
+          // throw new Error(`Failed to fetch pincode ${pincode}: ${err.message}`);
+        }
+    
     // Calculate delivery charges based on delivery type and total amount
     let deliveryCharge = 0;
     const totalAmount = cart.totalPrice || 0;
 
-    if (totalAmount < 1500) {
+    if (totalAmount < settingMinOrderAmount) {
       if (deliveryType.toLowerCase() === "express") {
-        deliveryCharge = 200;
+        deliveryCharge = settingDeliveryCharge;
       } else if (deliveryType.toLowerCase() === "standard") {
         deliveryCharge = 90;
       }
