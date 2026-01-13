@@ -689,6 +689,11 @@ exports.bulkUploadPincodes = async (req, res) => {
       const state = String(row.state || "").trim();
       const district = String(row.district || "").trim();
       const area = String(row.area || "").trim();
+      //its boolean field
+      const cod_available =
+  String(row.cod_available || "")
+    .trim()
+    .toLowerCase() === "true";
 
       if (!pincode || !city || !state || !district) {
         errors.push({
@@ -715,7 +720,7 @@ exports.bulkUploadPincodes = async (req, res) => {
         state,
         district,
         area,
-
+        cod_available,
         // delivery_available:
         //   String(row.delivery_available).toLowerCase() === "false"
         //     ? false

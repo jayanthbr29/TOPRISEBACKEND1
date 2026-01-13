@@ -136,7 +136,11 @@ async function getOrSetCache(key, callback, ttl) {
 
 exports.addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity = 1 } = req.body;
+    const { userId, productId } = req.body;
+    let quantity = parseInt(req.body.quantity) || 1;
+    if(quantity>10){
+      quantity=10;
+    }
     const product = await axios.get(
       `http://product-service:5001/products/v1/get-ProductById/${productId}`,
       {
@@ -308,6 +312,9 @@ exports.updateQuantity = async (req, res) => {
     }
 
     if (action === "increase") {
+      if(cart.items[itemIndex].quantity >=10){
+        return res.status(400).json({ message: "Maximum quantity reached" });
+      }
       cart.items[itemIndex].quantity += 1;
     } else if (action === "decrease") {
       if (cart.items[itemIndex].quantity > 1) {

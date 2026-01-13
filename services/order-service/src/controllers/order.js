@@ -6296,7 +6296,7 @@ exports.borzoWebhookUpdated = async (req, res) => {
       // console.log("delivery_changed", webhookData.delivery);
       const borzoOrderId = webhookData.delivery.order_id;
       const borzoOrderStatus = webhookData.delivery.status;
-      const client_Id = webhookData.delivery.client_order_id;
+      const client_Id = webhookData.delivery.note;
 
       const borzoFormatData = client_Id.split(",");
       console.log("borzoFormatData", borzoFormatData);
@@ -6519,7 +6519,7 @@ exports.borzoWebhookUpdated = async (req, res) => {
     } else if (webhookData.event_type == "order_changed") {
       const borzoOrderId = webhookData.order.order_id;
       const borzoOrderStatus = webhookData.order.status;
-      const client_Id = webhookData.order.points[0].client_order_id;
+      const client_Id = webhookData.order.points[0].note;
 
       const borzoFormatData = client_Id.split(",");
       // console.log("borzoFormatData", borzoFormatData);
@@ -7651,7 +7651,8 @@ exports.markDealerPackedAndUpdateOrderStatusBySKUOne = async (req, res) => {
           longitude: dealerGeo?.longitude || 77.31912,
           // latitude: 28.583905,
           // longitude: 77.322733,
-          client_order_id: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
+          client_order_id: `${order.orderId}`,
+          note: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
         };
 
 
@@ -8026,7 +8027,8 @@ exports.markDealerPackedAndUpdateOrderStatusBySKUOne = async (req, res) => {
           // latitude: 28.583905,
           // longitude: 77.322733,
           is_order_payment_here: true,
-          client_order_id: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
+           client_order_id: `${order.orderId}`,
+          note: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
           // taking_amount: order.paymentType === "COD" ? skuDetails.totalPrice : 0.00,
           required_finish_datetime: null,
         };
