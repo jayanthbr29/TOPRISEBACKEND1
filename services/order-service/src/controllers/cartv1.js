@@ -13,7 +13,7 @@ const redisClient = require("/packages/utils/redisClient");
 
 const calculateCartTotals = async (items, existingDeliveryCharge = 0) => {
   let setting = await axios.get("http://user-service:5001/api/appSetting/");
-   const availableItems = items.filter(item => item.is_available === true);
+  const availableItems = items.filter(item => item.is_available === true);
   const totalPrice = availableItems.reduce(
     (acc, item) => acc + item.selling_price,
     0
@@ -51,7 +51,7 @@ const calculateCartTotals = async (items, existingDeliveryCharge = 0) => {
   };
 };
 
-const updateCartItemsPrice = async (items, token,pincode) => {
+const updateCartItemsPrice = async (items, token, pincode) => {
   let returnData = await Promise.all(
     items.map(async (item) => {
       const product = await axios.get(
@@ -67,26 +67,26 @@ const updateCartItemsPrice = async (items, token,pincode) => {
         return null;
       }
       let pincodeDetails;
-    let pincodeId;
-    try {
-      const res = await axios.get(
-        `http://product-service:5001/api/pincodes/get/serviceable/${pincode}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token || "",
-          },
+      let pincodeId;
+      try {
+        const res = await axios.get(
+          `http://product-service:5001/api/pincodes/get/serviceable/${pincode}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token || "",
+            },
+          }
+        );
+
+        if (res.data?.success && res.data?.data?._id) {
+          pincodeId = res.data.data._id.toString(); // ✅ store as string
+          pincodeDetails = res.data.data;
         }
-      );
 
-      if (res.data?.success && res.data?.data?._id) {
-        pincodeId = res.data.data._id.toString(); // ✅ store as string
-        pincodeDetails = res.data.data;
+      } catch (err) {
+        console.log(err);
       }
-
-    } catch (err) {
-      console.log(err);
-    }
       if (product.data.data.live_status == "Rejected") {
         logger.error(`❌ Product no longer available: ${item.productId}`);
         return null;
@@ -99,50 +99,50 @@ const updateCartItemsPrice = async (items, token,pincode) => {
 
       let availableDealer = [];
       if (productData.available_dealers && productData.available_dealers.length > 0) {
-      availableDealer = await Promise.all(productData.available_dealers.map(async (dealer) => {
-        try {
-          const res = await axios.get(
-            `http://user-service:5001/api/users/dealer/${dealer.dealers_Ref}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: token || "",
-              },
+        availableDealer = await Promise.all(productData.available_dealers.map(async (dealer) => {
+          try {
+            const res = await axios.get(
+              `http://user-service:5001/api/users/dealer/${dealer.dealers_Ref}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: token || "",
+                },
+              }
+            );
+            const dealerData = res.data.data;
+            if (!dealerData) {
+              return {
+                ...dealer,
+                serviceable_pincodes: false,
+                // Return dealer as is if dealerData is not found
+              }
             }
-          );
-          const dealerData = res.data.data;
-          if (!dealerData) {
+
             return {
-              ...dealer, 
-              serviceable_pincodes: false,
-              // Return dealer as is if dealerData is not found
-          }
-        }
-         
-          return {
-            ...dealer,
-            serviceable_pincodes: dealerData.serviceable_pincodes.includes(pincodeId.toString()) || false,
-          }
+              ...dealer,
+              serviceable_pincodes: dealerData.serviceable_pincodes.includes(pincodeId.toString()) || false,
+            }
 
 
 
-        } catch (err) {
-          console.log("error",err);
+          } catch (err) {
+            console.log("error", err);
             return null;
-          // throw new Error(`Failed to fetch pincode ${pincode}: ${err.message}`);
-        }
-      }));
-    }
-    console.log("availableDealer",availableDealer);
-    availableDealer = availableDealer.filter(dealer => dealer !== null);
-    let isServiceable = []
+            // throw new Error(`Failed to fetch pincode ${pincode}: ${err.message}`);
+          }
+        }));
+      }
+      console.log("availableDealer", availableDealer);
+      availableDealer = availableDealer.filter(dealer => dealer !== null);
+      let isServiceable = []
 
-    if (availableDealer.length == 0) {
-      isServiceable = false;
-    } else {
-    isServiceable = availableDealer.some(dealer => dealer.serviceable_pincodes && dealer.inStock);
-    }
-    console.log("isServiceable",isServiceable);
+      if (availableDealer.length == 0) {
+        isServiceable = false;
+      } else {
+        isServiceable = availableDealer.some(dealer => dealer.serviceable_pincodes && dealer.inStock);
+      }
+      console.log("isServiceable", isServiceable);
       item.product_image =
         productData.images.length > 0
           ? productData.images
@@ -205,7 +205,11 @@ async function getOrSetCache(key, callback, ttl) {
 
 exports.addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity = 1, pincode } = req.body;
+    const { userId, productId, pincode } = req.body;
+    let quantity = parseInt(req.body.quantity) || 1;
+    if (quantity > 10) {
+      quantity = 10;
+    }
     const product = await axios.get(
       `http://product-service:5001/products/v1/get-ProductById/${productId}`,
       {
@@ -259,7 +263,7 @@ exports.addToCart = async (req, res) => {
             }
           );
           const dealerData = res.data.data;
-          
+
           return {
             ...dealer,
             serviceable_pincodes: dealerData.serviceable_pincodes.includes(pincodeId.toString()) || false,
@@ -337,7 +341,7 @@ exports.addToCart = async (req, res) => {
                   (productData.selling_price / 100) *
                   productData.gst_percentage) *
                 quantity,
-              is_available :true,
+              is_available: true,
             },
           ],
           pincode: pincode,
@@ -374,11 +378,11 @@ exports.addToCart = async (req, res) => {
           //   message: `Product not serviceable at pincode: ${pincode}`,
           //  }, "Product added to cart successfully");
           cart.items[itemIndex].is_available = false
-          cart.pincode=pincode;
+          cart.pincode = pincode;
         } else {
           cart.items[itemIndex].quantity += quantity;
           cart.items[itemIndex].is_available = true;
-          cart.pincode=pincode;
+          cart.pincode = pincode;
         }
 
       } else {
@@ -415,12 +419,12 @@ exports.addToCart = async (req, res) => {
               (productData.selling_price +
                 (productData.selling_price / 100) * productData.gst_percentage) *
               quantity,
-              is_available :true,
+            is_available: true,
           });
         }
       }
     }
- cart.pincode=pincode;
+    cart.pincode = pincode;
     await cart.save();
     cart.items = await updateCartItemsPrice(
       cart.items,
@@ -451,7 +455,7 @@ exports.addToCart = async (req, res) => {
 
 exports.removeProduct = async (req, res) => {
   try {
-    const { userId, productId,pincode } = req.body;
+    const { userId, productId, pincode } = req.body;
     const cart = await Cart.findOne({ userId });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
@@ -465,7 +469,7 @@ exports.removeProduct = async (req, res) => {
     );
     const totals = await calculateCartTotals(cart.items, cart.deliveryCharge || 0);
     Object.assign(cart, totals);
-    cart.pincode=pincode;
+    cart.pincode = pincode;
     await cart.save();
 
     logger.info(`✅ Product removed from cart for user: ${userId}`);
@@ -479,7 +483,7 @@ exports.removeProduct = async (req, res) => {
 
 exports.updateQuantity = async (req, res) => {
   try {
-    const { userId, productId ,pincode} = req.body;
+    const { userId, productId, pincode } = req.body;
     const { action } = req.query;
 
     if (!["increase", "decrease"].includes(action)) {
@@ -490,7 +494,7 @@ exports.updateQuantity = async (req, res) => {
 
     const cart = await Cart.findOne({ userId });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
-     const product = await axios.get(
+    const product = await axios.get(
       `http://product-service:5001/products/v1/get-ProductById/${productId}`,
       {
         headers: {
@@ -503,7 +507,7 @@ exports.updateQuantity = async (req, res) => {
       sendError(res, "Product not found", 404);
     }
 
-       // get pincode details
+    // get pincode details
     const authHeader = req.headers.authorization;
     let pincodeDetails;
     let pincodeId;
@@ -545,7 +549,7 @@ exports.updateQuantity = async (req, res) => {
             }
           );
           const dealerData = res.data.data;
-         
+
           return {
             ...dealer,
             serviceable_pincodes: dealerData.serviceable_pincodes.includes(pincodeId.toString()) || false,
@@ -588,18 +592,23 @@ exports.updateQuantity = async (req, res) => {
     if (action === "increase") {
       if (!isServiceable) {
         cart.items[itemIndex].is_available = false;
-      }else{
-        cart.items[itemIndex].quantity += 1;
+      } else {
+        if (cart.items[itemIndex].quantity >= 10) {
+          //return res.status(400).json({ message: "Maximum quantity reached" });
+        } else {
+          cart.items[itemIndex].quantity += 1;
+        }
+
         cart.items[itemIndex].is_available = true;
       }
-      
+
     } else if (action === "decrease") {
       if (cart.items[itemIndex].quantity > 1) {
         if (!isServiceable) {
           cart.items[itemIndex].is_available = false;
-        }else{
+        } else {
           cart.items[itemIndex].is_available = true;
-        cart.items[itemIndex].quantity -= 1;
+          cart.items[itemIndex].quantity -= 1;
 
         }
       } else {
@@ -614,7 +623,7 @@ exports.updateQuantity = async (req, res) => {
     );
     const totals = await calculateCartTotals(cart.items, cart.deliveryCharge || 0);
     Object.assign(cart, totals);
-   cart.pincode=pincode;
+    cart.pincode = pincode;
     await cart.save();
     if (action === "decrease") {
       logger.info(`✅ Product quantity decreased for user: ${userId}`);
@@ -631,7 +640,7 @@ exports.updateQuantity = async (req, res) => {
         message: `Product not serviceable at pincode: ${pincode}`,
       }, "Product quantity updated successfully");
     }
-    sendSuccess(res, {success: true, cart: cart}, "Product quantity updated successfully");
+    sendSuccess(res, { success: true, cart: cart }, "Product quantity updated successfully");
   } catch (err) {
     logger.error(`❌ Update quantity error: ${err}`);
     sendError(res, err);
@@ -640,7 +649,7 @@ exports.updateQuantity = async (req, res) => {
 
 exports.getCart = async (req, res) => {
   try {
-    const { userId ,pincode} = req.params;
+    const { userId, pincode } = req.params;
     // const cart = await getOrSetCache(`cart:${userId}`, async () => {
     //     const cart = await Cart.findOne({ userId });
     //     if (!cart) {
@@ -674,7 +683,7 @@ exports.getCart = async (req, res) => {
 
 exports.getCartById = async (req, res) => {
   try {
-    const { id ,pincode} = req.params;
+    const { id, pincode } = req.params;
     const cart = await Cart.findById(id);
     if (!cart) {
       logger.error(`❌ cart not found for id: ${id}`);
@@ -687,7 +696,7 @@ exports.getCartById = async (req, res) => {
     );
     const totals = await calculateCartTotals(cart.items, cart.deliveryCharge || 0);
     Object.assign(cart, totals);
-    cart.pincode=pincode;
+    cart.pincode = pincode;
     const savedCart = await cart.save();
     logger.info(`✅ Cart fetched for id: ${id}`);
     sendSuccess(res, savedCart, "Cart fetched successfully");
@@ -707,10 +716,34 @@ exports.getDeliveryChargeForBuyNow = async (req, res) => {
         .json({ error: "Delivery type must be 'express' or 'standard'" });
     }
     let deliveryCharge = 0;
+    let settingDeliveryCharge = 0;
+    let settingMinOrderAmount = 0;
+    const authHeader = req.headers.authorization;
+    try {
+      const res = await axios.get(
+        `http://user-service:5001/api/appSetting`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader || "",
+          },
+        }
+      );
+      console.log("App Setting Response:", res.data);
 
-    if (totalAmount < 1500) {
+      if (res.data?.success && res.data?.data) {
+        settingDeliveryCharge = res.data.data.deliveryCharge || 0;
+        settingMinOrderAmount = res.data.data.minimumOrderValue || 0;
+      }
+
+    } catch (err) {
+      console.log(err);
+      // throw new Error(`Failed to fetch pincode ${pincode}: ${err.message}`);
+    }
+
+    if (totalAmount < settingMinOrderAmount) {
       if (deliveryType.toLowerCase() === "express") {
-        deliveryCharge = 200;
+        deliveryCharge = settingDeliveryCharge;
       } else if (deliveryType.toLowerCase() === "standard") {
         deliveryCharge = 90;
       }
