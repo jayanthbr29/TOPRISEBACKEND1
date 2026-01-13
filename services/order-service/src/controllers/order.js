@@ -7668,7 +7668,8 @@ exports.markDealerPackedAndUpdateOrderStatusBySKUOne = async (req, res) => {
           // latitude: 28.583905,
           // longitude: 77.322733,
           is_order_payment_here: true,
-          client_order_id: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
+          client_order_id: `${order.orderId}`,
+          note: sku ? `ORDS,${order.orderId},${sku}` : `ORDM,${order.orderId},${skuList.join(",")}`,
           // taking_amount: order.paymentType === "COD" ? sku?skuDetails.totalPrice.toFixed(2).toString() :total_Order_Amount.toFixed(2).toString(): 0.00,
           required_finish_datetime: delivery_completion_time || null,
         };
@@ -7736,7 +7737,7 @@ exports.markDealerPackedAndUpdateOrderStatusBySKUOne = async (req, res) => {
                     console.log(
                       `Storing Borzo order ID: ${data.order_id} for order: ${order.orderId}`
                     );
-                    const splitedOrderId = data.points[0].client_order_id.split(",");
+                    const splitedOrderId = data.points[0].note.split(",");
                     let skuLists = [];
                     // if(splitedOrderId[0]=="ORDS"){
                     for (let i = 2; i < splitedOrderId.length; i++) {
@@ -8081,7 +8082,7 @@ exports.markDealerPackedAndUpdateOrderStatusBySKUOne = async (req, res) => {
                     console.log(
                       `Storing Borzo order ID: ${data.order_id} for order: ${order.orderId}`
                     );
-                    const splitedOrderId = data.points[0].client_order_id.split(",");
+                    const splitedOrderId = data.points[0].note.split(",");
                     let skuLists = [];
                     // if(splitedOrderId[0]=="ORDS"){
                     for (let i = 2; i < splitedOrderId.length; i++) {
