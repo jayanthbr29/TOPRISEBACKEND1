@@ -42,7 +42,7 @@ exports.createDocumentUpload = async (req, res) => {
         } = req.body;
 
         // Validation
-        if (!description || !user_id || !req.files?.length) {
+        if (!description || !user_id) {
             logger.error("Description, user_id, and files are required");
             return sendError(res, "Description, user_id, and at least one file are required", 400);
         }
@@ -51,28 +51,32 @@ exports.createDocumentUpload = async (req, res) => {
             logger.error("Either email or phone number is required");
             return sendError(res, "Either email or phone number is required for contact", 400);
         }
+        let uploadedFiles = [];
 
+        if (req.files) {
+            uploadedFiles = await Promise.all(
+                req.files.map(async (file) => {
+                    const result = await uploadFile(
+                        file.buffer,
+                        file.originalname,
+                        file.mimetype,
+                        "document-uploads"
+                    );
+
+                    // Determine file type
+                    const fileType = file.mimetype.includes("pdf") ? "pdf" : "image";
+
+                    return {
+                        url: result.Location,
+                        file_type: fileType,
+                        file_name: file.originalname,
+                        uploaded_at: new Date(),
+                    };
+                })
+            );
+        }
         // Upload files to S3
-        const uploadedFiles = await Promise.all(
-            req.files.map(async (file) => {
-                const result = await uploadFile(
-                    file.buffer,
-                    file.originalname,
-                    file.mimetype,
-                    "document-uploads"
-                );
 
-                // Determine file type
-                const fileType = file.mimetype.includes("pdf") ? "pdf" : "image";
-
-                return {
-                    url: result.Location,
-                    file_type: fileType,
-                    file_name: file.originalname,
-                    uploaded_at: new Date(),
-                };
-            })
-        );
 
         // Create document upload
         const documentUpload = new DocumentUpload({
