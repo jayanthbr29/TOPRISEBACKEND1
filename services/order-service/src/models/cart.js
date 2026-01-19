@@ -61,6 +61,10 @@ const cartItemSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  manufacturer_part_name: {
+    type: String,
+    // required: true,
+  },
 });
 
 const cartSchema = new mongoose.Schema(
