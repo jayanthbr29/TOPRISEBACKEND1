@@ -314,6 +314,7 @@ exports.addToCart = async (req, res) => {
           items: [
             {
               productId,
+              manufacturer_part_name: productData.manufacturer_part_name,
               product_image:
                 productData.images.length > 0
                   ? productData.images
@@ -397,6 +398,7 @@ exports.addToCart = async (req, res) => {
 
           cart.items.push({
             productId,
+            manufacturer_part_name: productData.manufacturer_part_name,
             product_image:
               productData.images.length > 0
                 ? productData.images

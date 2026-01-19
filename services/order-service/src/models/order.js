@@ -40,6 +40,7 @@ const OrderSchema = new mongoose.Schema(
           default: "Borzo"
         },
         product_image: [String],
+        manufacturer_part_name: String,
         productId: String,
         productName: String,
         selling_price: Number,

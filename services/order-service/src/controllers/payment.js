@@ -172,6 +172,7 @@ exports.verifyPayment = async (req, res) => {
           productName: item.product_name,
           selling_price: item.selling_price,
           product_image: item.product_image,
+          manufacturer_part_name: item.manufacturer_part_name,
           mrp: item.mrp,
           mrp_gst_amount: item.mrp_gst_amount,
           gst_percentage: item.gst_percentage,
@@ -204,6 +205,7 @@ exports.verifyPayment = async (req, res) => {
         quantity: s.quantity,
         productId: s.productId,
         productName: s.productName,
+        manufacturer_part_name: s.manufacturer_part_name,
         product_image: s.product_image,
         selling_price: s.selling_price,
         dealerMapped: [], // will be populated by the worker

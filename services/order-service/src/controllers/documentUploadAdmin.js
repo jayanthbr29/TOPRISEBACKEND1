@@ -668,6 +668,7 @@ exports.createOrderforPurchaseRequest = async (req, res) => {
             skus: (req.body.skus || []).map((s) => ({
                 sku: String(s.sku).toUpperCase().trim(),
                 quantity: s.quantity,
+                manufacturer_part_name: s.manufacturer_part_name,
                 productId: s.productId,
                 productName: s.productName,
                 product_image: s.product_image,
