@@ -329,7 +329,7 @@ exports.checkPincode = async (req, res) => {
             // delivery_available: pincodeData.delivery_available,
             // delivery_charges: pincodeData.delivery_charges,
             // estimated_delivery_days: pincodeData.estimated_delivery_days,
-            // cod_available: pincodeData.cod_available,
+            cod_available: pincodeData.cod_available,
             status: pincodeData.status,
             message: "Pincode is available for delivery"
         };
