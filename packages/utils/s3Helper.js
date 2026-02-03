@@ -13,7 +13,6 @@ const REGION = process.env.AWS_REGION;// Example region, replace with your actua
 // const BUCKET = process.env.AWS_BUCKET_NAME;
 const BUCKET = process.env.AWS_BUCKET_NAME;
 
-  
 
 
 const s3 = new S3Client({
